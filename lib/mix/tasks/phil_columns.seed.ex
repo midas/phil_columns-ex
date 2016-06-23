@@ -13,8 +13,8 @@ defmodule Mix.Tasks.PhilColumns.Seed do
 
     {opts, _, _} = OptionParser.parse args,
                      switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
-                                pool_size: :integer, tags: :string],
-                     aliases: [n: :step, v: :to]
+                                pool_size: :integer, env: :string, tags: :string],
+                     aliases: [e: :env, n: :step, t: :tags, v: :to]
 
     opts =
       if opts[:to] || opts[:step] || opts[:all],
@@ -40,8 +40,6 @@ defmodule Mix.Tasks.PhilColumns.Seed do
       if opts[:tags],
         do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
         else: Keyword.put(opts, :tags, [])
-
-    #IO.inspect opts
 
     Enum.each repos, fn repo ->
       ensure_repo(repo, args)
