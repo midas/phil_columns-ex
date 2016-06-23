@@ -23,11 +23,11 @@ defmodule PhilColumns.Seed.SchemaSeed do
   end
 
   def up(repo, version) do
-    repo.insert! %__MODULE__{version: version} |> Ecto.put_meta(source: get_source(repo)), @opts
+    repo.insert! %__MODULE__{version: version}, @opts
   end
 
   def down(repo, version) do
-    repo.delete_all from(p in {get_source(repo), __MODULE__}, where: p.version == ^version), @opts
+    repo.delete_all from(p in __MODULE__, where: p.version == ^version), @opts
   end
 
   def get_source(repo) do

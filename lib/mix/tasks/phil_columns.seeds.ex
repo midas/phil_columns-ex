@@ -41,7 +41,7 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
 
       """
       Repo: #{inspect repo}
-        Status    Migration ID    Migration Name
+        Status    Seed ID         Seed Name
       --------------------------------------------------
       """ <>
       Enum.map_join(repo_status, "\n", fn({status, number, description}) ->

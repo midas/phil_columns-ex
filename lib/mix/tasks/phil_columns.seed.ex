@@ -10,11 +10,10 @@ defmodule Mix.Tasks.PhilColumns.Seed do
   def run(args, seeder \\ &PhilColumns.Seeder.run/4) do
     repos = parse_repo(args)
             |> List.wrap
-    #IO.inspect repos
 
     {opts, _, _} = OptionParser.parse args,
                      switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
-                                pool_size: :integer],
+                                pool_size: :integer, tags: :string],
                      aliases: [n: :step, v: :to]
 
     opts =
@@ -23,9 +22,24 @@ defmodule Mix.Tasks.PhilColumns.Seed do
         else: Keyword.put(opts, :all, true)
 
     opts =
+      if opts[:log],
+        do: opts,
+        else: Keyword.put(opts, :log, :info)
+
+    opts =
       if opts[:quiet],
         do: Keyword.put(opts, :log, false),
         else: opts
+
+    opts =
+      if opts[:env],
+        do: Keyword.put(opts, :env, String.to_atom(opts[:env])),
+        else: Keyword.put(opts, :env, :dev)
+
+    opts =
+      if opts[:tags],
+        do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
+        else: Keyword.put(opts, :tags, [])
 
     #IO.inspect opts
 
@@ -33,8 +47,7 @@ defmodule Mix.Tasks.PhilColumns.Seed do
       ensure_repo(repo, args)
       ensure_seeds_path(repo)
       {:ok, pid} = ensure_started(repo)
-      IO.inspect pid
-      seeder.(repo, migrations_path(repo), :up, opts)
+      seeder.(repo, seeds_path(repo), :up, opts)
       ensure_stopped(pid)
     end
   end
