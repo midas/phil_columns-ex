@@ -129,14 +129,16 @@ defmodule PhilColumns.Seeder do
   Returns an array of tuples as the seed status of the given repo,
   without actually running any seeds.
   """
-  def seeds(repo, directory) do
+  def seeds(repo, directory, opts) do
     versions = seeded_versions(repo)
 
-    Enum.map(pending_in_direction(versions, directory, :down) |> Enum.reverse, fn {a, b, _}
-     -> {:up, a, b}
+    Enum.map(pending_in_direction(versions, directory, :down, opts) |> Enum.reverse, fn {a, b, _, _} ->
+      #require IEx; IEx.pry
+      {:up, a, b}
     end)
     ++
-    Enum.map(pending_in_direction(versions, directory, :up), fn {a, b, _} ->
+    Enum.map(pending_in_direction(versions, directory, :up, opts), fn {a, b, _, _} ->
+      #require IEx; IEx.pry
       {:down, a, b}
     end)
   end
@@ -161,7 +163,7 @@ defmodule PhilColumns.Seeder do
   #end
 
   defp run_all(repo, versions, directory, direction, opts) do
-    pending_in_direction(versions, directory, direction)
+    pending_in_direction(versions, directory, direction, opts)
     |> seed(direction, repo, opts)
   end
 
@@ -176,12 +178,23 @@ defmodule PhilColumns.Seeder do
     #|> Enum.reverse
   #end
 
-  defp pending_in_direction(versions, directory, :up) do
+  defp pending_in_direction(versions, directory, :up, opts) do
     seeds_for(directory)
     |> Enum.filter(fn {version, _name, _file} -> not (version in versions) end)
+    |> Enum.map(fn {version, name, file} ->
+         [{mod, _bin}] = Code.load_file(file)
+         {version, name, file, mod}
+       end)
+    |> Enum.filter(fn {_version, _name, _file, mod} ->
+         has_env_and_any_tags?(mod, opts[:env], opts[:tags])
+       end)
   end
 
-  defp pending_in_direction(versions, directory, :down) do
+  defp has_env_and_any_tags?(mod, env, []) do
+    Enum.member?(mod.envs, env)
+  end
+
+  defp pending_in_direction(versions, directory, :down, opts) do
     seeds_for(directory)
     |> Enum.filter(fn {version, _name, _file} -> version in versions end)
     |> Enum.reverse
@@ -217,11 +230,8 @@ defmodule PhilColumns.Seeder do
 
     ensure_no_duplication(seeds)
 
-    Enum.map seeds, fn {version, _name, file} ->
-      {mod, _bin} =
-        Enum.find(Code.load_file(file), fn {mod, _bin} ->
-          function_exported?(mod, :__seed__, 0)
-        end) || raise_no_seed_in_file(file)
+    Enum.map seeds, fn {version, _name, file, mod} ->
+      function_exported?(mod, :__seed__, 0) || raise_no_seed_in_file(file)
 
       case direction do
         :up   -> do_up(repo, version, mod, opts)
@@ -232,7 +242,7 @@ defmodule PhilColumns.Seeder do
     end
   end
 
-  defp ensure_no_duplication([{version, name, _} | t]) do
+  defp ensure_no_duplication([{version, name, _, _} | t]) do
     if List.keyfind(t, version, 0) do
       raise Ecto.MigrationError,
         message: "seeds can't be executed, migration version #{version} is duplicated"
@@ -251,6 +261,19 @@ defmodule PhilColumns.Seeder do
   defp raise_no_seed_in_file(file) do
     raise PhilColumns.SeedError,
       message: "file #{Path.relative_to_cwd(file)} does not contain any PhilColumns.Seed"
+  end
+
+  defp has_env_and_any_tags?(mod, env, tags) do
+    Enum.member?(mod.envs, env) &&
+      any_intersection?(mod, tags)
+  end
+
+  defp any_intersection?(mod, tags) do
+    (intersection(mod.tags, tags) |> Enum.count) > 0
+  end
+
+  defp intersection(list_a, list_b) do
+    list_a -- (list_a -- list_b)
   end
 
   defp log(false, _msg), do: :ok

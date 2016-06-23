@@ -26,16 +26,30 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
   """
 
   @doc false
-  def run(args, seeds \\ &PhilColumns.Seeder.seeds/2, puts \\ &IO.puts/1) do
+  def run(args, seeds \\ &PhilColumns.Seeder.seeds/3, puts \\ &IO.puts/1) do
     repos = parse_repo(args)
             |> List.wrap
+
+    {opts, _, _} = OptionParser.parse args,
+                     switches: [env: :string, tags: :string],
+                     aliases: [e: :env, n: :step, v: :to]
+
+    opts =
+      if opts[:env],
+        do: Keyword.put(opts, :env, String.to_atom(opts[:env])),
+        else: Keyword.put(opts, :env, :dev)
+
+    opts =
+      if opts[:tags],
+        do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
+        else: Keyword.put(opts, :tags, [])
 
     result = Enum.map(repos, fn repo ->
       ensure_repo(repo, args)
       ensure_seeds_path(repo)
       {:ok, pid} = ensure_started(repo)
 
-      repo_status = seeds.(repo, seeds_path(repo))
+      repo_status = seeds.(repo, seeds_path(repo), opts)
 
       pid && ensure_stopped(pid)
 
