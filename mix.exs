@@ -49,7 +49,7 @@ defmodule PhilColumns.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:ecto, "< 2.0.0"},
+      {:ecto, "< 1.0.0"},
       {:inflex, "~> 1.6"}
     ]
   end
