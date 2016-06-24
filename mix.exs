@@ -20,14 +20,19 @@ defmodule PhilColumns.Mixfile do
 
   defp package do
     [
-      name:        :phil_columns,
-      files:       ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+      name: :phil_columns,
+      files: [
+        "lib",
+        "mix.exs",
+        "README*",
+        "LICENSE*"
+      ],
       maintainers: ["C. Jason Harrelson"],
-      licenses:    ["MIT"],
-      links:       %{
-                     "GitHub" => "https://github.com/midas/phil_columns-ex",
-                     "Docs" => ""
-                   }
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/midas/phil_columns-ex",
+        "Docs" => ""
+      }
     ]
   end
 
