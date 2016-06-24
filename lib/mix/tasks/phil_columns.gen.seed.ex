@@ -38,6 +38,8 @@ defmodule Mix.Tasks.PhilColumns.Gen.Seed do
   defmodule <%= inspect @mod %> do
     use <%= inspect @root_mod %>.Seed
 
+    envs [:dev]
+
     def up(_repo) do
     end
   end
