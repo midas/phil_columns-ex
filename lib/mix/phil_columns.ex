@@ -25,6 +25,29 @@ defmodule Mix.PhilColumns do
     repo
   end
 
+  def root_mod(repo_mod) do
+    name = repo_mod
+           |> root_mod_name
+
+    Module.concat([name])
+  end
+
+  def root_mod_name(repo_mod) do
+    repo_mod
+    |> Module.split
+    |> List.first
+  end
+
+  #@doc """
+  #Gets a path relative to the application path.
+  #Raises on umbrella application.
+  #"""
+  #def no_umbrella!(task) do
+    #if Mix.Project.umbrella? do
+      #Mix.raise "cannot run task #{inspect task} from umbrella application"
+    #end
+  #end
+
   @doc """
   Gets the seeds path from a repository.
   """
