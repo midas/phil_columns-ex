@@ -42,11 +42,9 @@ defmodule Mix.Tasks.PhilColumns.Seed do
         else: Keyword.put(opts, :tags, [])
 
     Enum.each repos, fn repo ->
-      ensure_repo(repo, args)
-      ensure_seeds_path(repo)
-      {:ok, pid} = ensure_started(repo)
-      seeder.(repo, seeds_path(repo), :up, opts)
-      ensure_stopped(pid)
+      exec_task(repo, opts, fn ->
+        seeder.(repo, seeds_path(repo), :up, opts)
+      end)
     end
   end
 

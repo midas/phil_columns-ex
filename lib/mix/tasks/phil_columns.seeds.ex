@@ -45,13 +45,10 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
         else: Keyword.put(opts, :tags, [])
 
     result = Enum.map(repos, fn repo ->
-      ensure_repo(repo, args)
-      ensure_seeds_path(repo)
-      {:ok, pid} = ensure_started(repo)
-
-      repo_status = seeds.(repo, seeds_path(repo), opts)
-
-      pid && ensure_stopped(pid)
+      repo_status =
+        exec_task(repo, opts, fn ->
+          seeds.(repo, seeds_path(repo), opts)
+        end)
 
       """
       Repo: #{inspect repo}

@@ -25,6 +25,15 @@ defmodule Mix.PhilColumns do
     repo
   end
 
+  def exec_task(repo, opts, task) do
+    ensure_repo(repo, opts)
+    ensure_seeds_path(repo)
+    {:ok, pid} = ensure_started(repo)
+    result = task.()
+    pid && ensure_stopped(pid)
+    result
+  end
+
   def root_mod(repo_mod) do
     name = repo_mod
            |> root_mod_name
