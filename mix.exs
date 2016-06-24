@@ -7,15 +7,35 @@ defmodule PhilColumns.Mixfile do
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: description,
+     package: package,
      deps: deps]
+  end
+
+  defp description do
+    """
+    A full featured Elixir/Ecto seeding solution providing means for dev and prod seeding.
+    """
+  end
+
+  defp package do
+    [
+      name:        :phil_columns,
+      files:       ["lib", "priv", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+      maintainers: ["C. Jason Harrelson"],
+      licenses:    ["MIT"],
+      links:       %{
+                     "GitHub" => "https://github.com/midas/phil_columns-ex",
+                     "Docs" => ""
+                   }
+    ]
   end
 
   # Configuration for the OTP application
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger],
-     mod: {PhilColumns, []}]
+    [applications: [:logger]]
   end
 
   # Dependencies can be Hex packages:
