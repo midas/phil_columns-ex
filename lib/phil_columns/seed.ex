@@ -23,36 +23,123 @@ defmodule PhilColumns.Seed do
 
       def down_changeset, do: raise("Implement me")
 
-      defp handle_up({:ok, created}, %{model: %{id: nil}}), do: {:ok, %{createds: [created]}}
+      defp do_up({%Ecto.Changeset{} = parent_changeset, children_changesets}, repo) do
+        {:ok, parent} = do_up(parent_changeset, repo)
+
+        child_results =
+          Enum.map(children_changesets, fn(child_changeset) ->
+            parent_assoc_name = parent_changeset.model.__struct__.__schema__(:source)
+                                |> Inflex.singularize
+                                |> String.to_atom
+            %{owner_key: fk_attr_name, owner: mod} = assoc_meta = child_changeset.model.__struct__.__schema__(:association, parent_assoc_name)
+            model = struct(mod, Map.put(%{}, fk_attr_name, parent.id))
+            child_changeset = mod.changeset(model, child_changeset.changes)
+            result = do_up(child_changeset, repo)
+          end)
+
+        {:ok, parent, child_results}
+      end
+
+      defp do_up({parent, children_changesets}, repo) do
+        child_results =
+          Enum.map(children_changesets, fn(child_changeset) ->
+            parent_assoc_name = parent.__struct__.__schema__(:source)
+                                |> Inflex.singularize
+                                |> String.to_atom
+            %{owner_key: fk_attr_name, owner: mod} = assoc_meta = child_changeset.model.__struct__.__schema__(:association, parent_assoc_name)
+            model = struct(mod, Map.put(%{}, fk_attr_name, parent.id))
+            child_changeset = mod.changeset(model, child_changeset.changes)
+            result = do_up(child_changeset, repo)
+          end)
+
+        {:ok, parent, child_results}
+      end
+
+      defp do_up(changeset, repo) do
+        changeset
+        |> database_operation(repo)
+      end
+
+      defp handle_ups(results, changesets) do
+        full_results = Enum.zip(results, changesets)
+
+        {createds, others} =
+          Enum.map(full_results, fn({result, changeset}) ->
+            handle_up(result, changeset)
+          end)
+          |> List.flatten
+          |> Enum.partition(fn({op, _}) -> op == :created end)
+
+        {updateds, others}  = Enum.partition(others, fn({op, _}) -> op == :updated end)
+        {existings, others} = Enum.partition(others, fn({op, _}) -> op == :existing end)
+        {errors, others}    = Enum.partition(others, fn({op, _}) -> op == :error end)
+
+        createds  = Enum.map(createds, fn({_op, created}) -> created end)
+        updateds  = Enum.map(updateds, fn({_op, {updated, changes}}) -> {updated, changes} end)
+        errors    = Enum.map(errors, fn({_op, error}) -> error end)
+        existings = Enum.map(existings, fn({_op, existing}) -> existing end)
+
+        {:ok, %{createds: createds,
+                errors: errors,
+                existings: existings,
+                updateds: updateds}}
+      end
+
+      defp handle_up({:ok, parent, child_results}, {parent_changeset, child_changesets}) do
+        results = [handle_up({:ok, parent}, parent_changeset)]
+
+        Enum.zip(child_results, child_changesets)
+        |> Enum.reduce(results, fn({child_result, child_changeset},results) -> [handle_up(child_result, child_changeset)|results] end)
+        |> Enum.reverse
+      end
+
+      defp handle_up({:ok, created}, %{model: %{id: nil}}) do
+        {:created, created}
+      end
 
       defp handle_up({:ok, updated}, %{changes: changes, model: model}) do
         changes = Enum.map(changes, fn({k,to}) -> {k, [Map.get(model, k), to]} end) |> Enum.into(%{})
-        {:ok, %{updateds: [{updated, changes}]}}
+
+        {:updated, {updated, changes}}
       end
 
-      defp handle_up({:error, changeset}, _), do: {:error, changeset}
+      defp handle_up({:ok, parent}, %{id: id}) do
+        {:existing, parent}
+      end
+
+      defp handle_up({:error, changeset}, _) do
+        {:error, changeset}
+      end
+
+      defp handle_up(any, _) do
+      end
 
       def up(repo) do
-        changeset = up_changeset
+        changesets = up_changeset
+                     |> List.wrap
 
-        changeset
-        |> database_operation(repo)
-        |> handle_up(changeset)
+        Enum.map(changesets, fn(changeset) ->
+          changeset
+          |> do_up(repo)
+        end)
+        |> handle_ups(changesets)
       end
 
-      def up_changeset, do: raise("Implement me")
-
-      #defp repo, do: unquote(opts[:repo])
+      defp up_changeset, do: raise("Implement me")
 
       defoverridable [
         database_operation: 2,
         down: 1,
         down_changeset: 0,
+        do_up: 2,
         handle_up: 2,
+        handle_ups: 2,
         up: 1,
         up_changeset: 0
       ]
+
     end
+
   end
 
   @doc false

@@ -19,8 +19,14 @@ defmodule PhilColumns.Seed.Runner do
   end
 
   defp handle_run_seed({time, {:ok, artifacts}}, opts) do
-    createds = Map.get( artifacts, :createds, [] )
-    updateds = Map.get( artifacts, :updateds, [] )
+    createds  = Map.get( artifacts, :createds, [] )
+    updateds  = Map.get( artifacts, :updateds, [] )
+    errors    = Map.get( artifacts, :errors, [] )
+    existings = Map.get( artifacts, :existings, [] )
+
+    Enum.each(existings, fn(existing) ->
+      log(opts[:log], "Existing parent #{inspect existing.__struct__}{id: #{inspect existing.id}}")
+    end)
 
     Enum.each(createds, fn(created) ->
       log(opts[:log], "Created #{inspect created.__struct__}{id: #{inspect created.id}}")
@@ -29,6 +35,12 @@ defmodule PhilColumns.Seed.Runner do
     Enum.each(updateds, fn({updated, changes}) ->
       log(opts[:log], "Updated #{inspect updated.__struct__}{id: #{inspect updated.id}} with changes: #{inspect changes}")
     end)
+
+    Enum.each(errors, fn(changeset) ->
+      log(opts[:log], "ERROR #{inspect changeset.errors} on #{changeset.model.__struct__}{id: #{inspect changeset.model.id}} with changes #{inspect changeset.changes}")
+    end)
+
+    if Enum.count(errors) > 0, do: raise("failed due to errors")
 
     log(opts[:log], "== Seeded in #{inspect(div(time, 10000) / 10)}s")
   end
