@@ -138,7 +138,7 @@ end
 Use the module in the production app's remote console.
 
 ```elixir
-Seeder.seed(tags: ~w(things stuff)a)
+MyApp.Deployment.Seeder.seed(tags: ~w(things stuff)a)
 ```
 
 ## Installation
