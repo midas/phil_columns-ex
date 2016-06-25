@@ -105,14 +105,12 @@ defmodule MyApp.Deployment.Seeder do
   import Mix.Ecto
   import Mix.PhilColumns
 
-  alias MyApp.Deployment.Seeder
-
   @doc """
   Execute seeds.
 
   Usage:
 
-    Seeder.seed(tags: ~w(fort_bragg)a)
+    
 
    to, step, all, log, env, tags
   """
@@ -144,6 +142,12 @@ defmodule MyApp.Deployment.Seeder do
     end)
   end
 end
+```
+
+Use the modiule.
+
+```elixir
+Seeder.seed(tags: ~w(things stuff)a)
 ```
 
 ## Installation
