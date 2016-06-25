@@ -109,7 +109,7 @@ defmodule MyApp.Deployment.Seeder do
     repos = parse_repo(opts)
             |> List.wrap
 
-    # set env to the current_env
+    # set env with current_env/0 overwriting provided arg
     opts = Keyword.put( opts, :env, current_env )
 
     opts =
