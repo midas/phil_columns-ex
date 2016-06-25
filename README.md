@@ -105,15 +105,6 @@ defmodule MyApp.Deployment.Seeder do
   import Mix.Ecto
   import Mix.PhilColumns
 
-  @doc """
-  Execute seeds.
-
-  Usage:
-
-    
-
-   to, step, all, log, env, tags
-  """
   def seed( opts, seeder \\ &PhilColumns.Seeder.run/4 ) do
     repos = parse_repo(opts)
             |> List.wrap
