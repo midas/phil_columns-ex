@@ -132,6 +132,11 @@ defmodule MyApp.Deployment.Seeder do
       end)
     end)
   end
+  
+  defp current_env do
+    # implement this
+    # warning: do not use Mix.env if you are doing an erlang release
+  end
 end
 ```
 
