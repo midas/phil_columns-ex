@@ -105,7 +105,7 @@ defmodule MyApp.Deployment.Seeder do
   import Mix.Ecto
   import Mix.PhilColumns
 
-  def seed( opts, seeder \\ &PhilColumns.Seeder.run/4 ) do
+  def seed(opts, seeder \\ &PhilColumns.Seeder.run/4) do
     repos = parse_repo(opts)
             |> List.wrap
 
@@ -126,7 +126,7 @@ defmodule MyApp.Deployment.Seeder do
         do: Keyword.put(opts, :log, false),
         else: opts
 
-    Enum.each( repos, fn repo ->
+    Enum.each(repos, fn repo ->
       exec_task(repo, opts, fn ->
         seeder.(repo, seeds_path(repo), :up, opts)
       end)
