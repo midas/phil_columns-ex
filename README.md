@@ -5,6 +5,40 @@
 A full featured Elixir/Ecto seeding solution providing means for dev and prod seeding.
 
 
+## Installation
+
+Add phil_columns to your list of dependencies in `mix.exs`:
+
+```elixir
+def deps do
+  [{:phil_columns, "~> 0.1.0"}]
+end
+```
+
+Ensure phil_columns is started before your application:
+
+```elixir
+def application do
+  [applications: [:phil_columns]]
+end
+```
+
+Create a `Seed` module for you application:
+
+```elixir
+# lib/my_app/seed.ex
+
+defmodule MyApp.Seed do
+  defmacro __using__(_opts) do
+    quote do
+      use PhilColumns.Seed
+
+      # shared code here ...
+    end
+  end
+end
+```
+
 ## Usage
 
 ### Seeding Quick Start
@@ -21,12 +55,10 @@ functions using any valid Elixir/Ecto code.
 
 defmodule MyApp.Repo.Seeds.AddThings do
   use MyApp.Seed
-  ...
 
   def up(_repo) do
     # seeding logic ...
   end
-  ...
 end
 ```
 
@@ -59,7 +91,7 @@ defmodule MyApp.Repo.Seeds.AddThings do
   use MyApp.Seed
 
   envs [:dev, :prod]
-  ...
+  # ...
 end
 ```
 
@@ -75,13 +107,13 @@ defmodule MyApp.Repo.Seeds.AddThings do
 
   envs [:dev, :prod]
   tags [:some_tag]
-  ...
+  # ...
 end
 ```
 
 To change the tag(s) provide them after the command command line.
 
-    $ mix phil_columns.seed --t=users,settings,etc
+    $ mix phil_columns.seed --tags=users,settings,etc
     $ mix phil_columns.seed -t users,settings,etc
 
 
@@ -89,7 +121,7 @@ To change the tag(s) provide them after the command command line.
 
 ### Why?
 
-Systems often have system level data that must be seeded when bootstraping a system or as new features or rolled out.  Some 
+Systems often have system level data that must be seeded when bootstraping a system or as new features are rolled out.  Some 
 examples are settings, configurations, roles, licenses, etc.
 
 _PhilColumns_ provides the ability to apply these system data seedings and commit them with features, analgous to an Ecto 
@@ -98,19 +130,51 @@ other strategy can.
 
 ### How?
 
-TODO
+Create a module specifically for dealing with seeding in production.
 
-## Installation
+```elixir
+defmodule MyApp.Deployment.Seeder do
+  import Mix.Ecto
+  import Mix.PhilColumns
 
-  1. Add phil_columns to your list of dependencies in `mix.exs`:
+  def seed(opts, seeder \\ &PhilColumns.Seeder.run/4) do
+    repos = parse_repo(opts)
+            |> List.wrap
 
-        def deps do
-          [{:phil_columns, "~> 0.1.0"}]
-        end
+    # set env with current_env/0 overwriting provided arg
+    opts = Keyword.put( opts, :env, current_env )
 
-  2. Ensure phil_columns is started before your application:
+    opts =
+      if opts[:to] || opts[:step] || opts[:all],
+        do: opts,
+        else: Keyword.put(opts, :all, true)
 
-        def application do
-          [applications: [:phil_columns]]
-        end
+    opts =
+      if opts[:log],
+        do: opts,
+        else: Keyword.put(opts, :log, :info)
 
+    opts =
+      if opts[:quiet],
+        do: Keyword.put(opts, :log, false),
+        else: opts
+
+    Enum.each(repos, fn repo ->
+      exec_task(repo, opts, fn ->
+        seeder.(repo, seeds_path(repo), :up, opts)
+      end)
+    end)
+  end
+  
+  defp current_env do
+    # implement this
+    # warning: do not use Mix.env if you are doing an erlang release
+  end
+end
+```
+
+Use the module in the production app's remote console.
+
+```elixir
+MyApp.Deployment.Seeder.seed(tags: ~w(things stuff)a)
+```
