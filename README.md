@@ -98,7 +98,53 @@ other strategy can.
 
 ### How?
 
-TODO
+Create a module specifically for dealing with seeding in production.
+
+```elixir
+defmodule MyApp.Deployment.Seeder do
+  import Mix.Ecto
+  import Mix.PhilColumns
+
+  alias MyApp.Deployment.Seeder
+
+  @doc """
+  Execute seeds.
+
+  Usage:
+
+    Seeder.seed(tags: ~w(fort_bragg)a)
+
+   to, step, all, log, env, tags
+  """
+  def seed( opts, seeder \\ &PhilColumns.Seeder.run/4 ) do
+    repos = parse_repo(opts)
+            |> List.wrap
+
+    opts = Keyword.put( opts, :env, current_env )
+
+    opts =
+      if opts[:to] || opts[:step] || opts[:all],
+        do: opts,
+        else: Keyword.put(opts, :all, true)
+
+    opts =
+      if opts[:log],
+        do: opts,
+        else: Keyword.put(opts, :log, :info)
+
+    opts =
+      if opts[:quiet],
+        do: Keyword.put(opts, :log, false),
+        else: opts
+
+    Enum.each( repos, fn repo ->
+      exec_task(repo, opts, fn ->
+        seeder.(repo, seeds_path(repo), :up, opts)
+      end)
+    end)
+  end
+end
+```
 
 ## Installation
 
