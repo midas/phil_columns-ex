@@ -133,12 +133,10 @@ defmodule PhilColumns.Seeder do
     versions = seeded_versions(repo)
 
     Enum.map(pending_in_direction(versions, directory, :down, opts) |> Enum.reverse, fn {a, b, _, _} ->
-      #require IEx; IEx.pry
       {:up, a, b}
     end)
     ++
     Enum.map(pending_in_direction(versions, directory, :up, opts), fn {a, b, _, _} ->
-      #require IEx; IEx.pry
       {:down, a, b}
     end)
   end
@@ -190,13 +188,16 @@ defmodule PhilColumns.Seeder do
        end)
   end
 
-  defp has_env_and_any_tags?(mod, env, []) do
-    Enum.member?(mod.envs, env)
-  end
-
   defp pending_in_direction(versions, directory, :down, opts) do
     seeds_for(directory)
     |> Enum.filter(fn {version, _name, _file} -> version in versions end)
+    |> Enum.map(fn {version, name, file} ->
+         [{mod, _bin}] = Code.load_file(file)
+         {version, name, file, mod}
+       end)
+    |> Enum.filter(fn {_version, _name, _file, mod} ->
+         has_env_and_any_tags?(mod, opts[:env], opts[:tags])
+       end)
     |> Enum.reverse
   end
 
@@ -245,12 +246,12 @@ defmodule PhilColumns.Seeder do
   defp ensure_no_duplication([{version, name, _, _} | t]) do
     if List.keyfind(t, version, 0) do
       raise Ecto.MigrationError,
-        message: "seeds can't be executed, migration version #{version} is duplicated"
+        message: "seeds can't be executed, seed version #{version} is duplicated"
     end
 
     if List.keyfind(t, name, 1) do
       raise Ecto.MigrationError,
-        message: "seeds can't be executed, migration name #{name} is duplicated"
+        message: "seeds can't be executed, seed name #{name} is duplicated"
     end
 
     ensure_no_duplication(t)
@@ -267,6 +268,8 @@ defmodule PhilColumns.Seeder do
     Enum.member?(mod.envs, env) &&
       any_intersection?(mod, tags)
   end
+
+  defp any_intersection?(mod, []), do: true
 
   defp any_intersection?(mod, tags) do
     (intersection(mod.tags, tags) |> Enum.count) > 0
