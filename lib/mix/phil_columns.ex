@@ -30,7 +30,7 @@ defmodule Mix.PhilColumns do
     ensure_seeds_path(repo)
     {:ok, pid} = ensure_started(repo)
     result = task.()
-    pid && ensure_stopped(pid)
+    pid && ensure_stopped(repo, pid)
     result
   end
 
