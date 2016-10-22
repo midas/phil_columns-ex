@@ -28,9 +28,9 @@ defmodule Mix.PhilColumns do
   def exec_task(repo, opts, task) do
     ensure_repo(repo, opts)
     ensure_seeds_path(repo)
-    {:ok, pid} = ensure_started(repo)
+    {:ok, pid, _apps} = ensure_started(repo, opts)
     result = task.()
-    pid && ensure_stopped(repo, pid)
+    #pid && ensure_stopped(repo, pid)
     result
   end
 
@@ -62,7 +62,7 @@ defmodule Mix.PhilColumns do
   """
   @spec seeds_path(Ecto.Repo.t) :: String.t
   def seeds_path(repo) do
-    Path.join(repo_priv(repo), "seeds")
+    Path.join(source_repo_priv(repo), "seeds")
   end
 
 end
