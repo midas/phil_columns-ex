@@ -108,7 +108,7 @@ defmodule PhilColumns.Factory do
     changeset
     |> Changeset.apply_changes
     |> do_merge( attrs )
-    |> struct_to_map
+    |> drop_ecto_fields
   end
 
   defp handle_params_for( %{__meta__: _} = record, attrs ) do
@@ -147,12 +147,6 @@ defmodule PhilColumns.Factory do
     |> underscore
     |> String.downcase
     |> String.to_atom
-  end
-
-  defp struct_to_map( struct ) do
-    struct
-    |> Map.from_struct
-    |> Map.delete( :__meta__ )
   end
 
   defp underscore(name) do
