@@ -89,9 +89,10 @@ defmodule PhilColumns.Factory do
   defp handle_insert( %Changeset{} = changeset, attrs, repo ) do
     record = changeset
              |> Changeset.apply_changes
+             |> do_merge( attrs )
 
     schema_mod = module_from_struct( record )
-    changeset  = apply( schema_mod, :changeset, [record, attrs] )
+    changeset  = apply( schema_mod, :changeset, [struct(schema_mod), drop_ecto_fields(record)] )
 
     changeset
     |> repo.insert!
