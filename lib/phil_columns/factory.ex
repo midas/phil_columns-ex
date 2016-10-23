@@ -76,8 +76,8 @@ defmodule PhilColumns.Factory do
   # Private ##########
 
   defp handle_build( %Changeset{} = changeset, attrs ) do
-    changeset.data
-    |> Map.merge( changeset.changes )
+    changeset
+    |> Changeset.apply_changes
     |> do_merge( attrs )
   end
 
@@ -104,8 +104,9 @@ defmodule PhilColumns.Factory do
   end
 
   defp handle_params_for( %Changeset{} = changeset, attrs ) do
-    changeset.data
-    |> Map.merge( changeset.changes )
+    # TODO should we use Changeset.apply_changes instead?
+    changeset
+    |> Changeset.apply_changes
     |> do_merge( attrs )
     |> struct_to_map
   end
