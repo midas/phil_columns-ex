@@ -105,7 +105,6 @@ defmodule PhilColumns.Factory do
   end
 
   defp handle_params_for( %Changeset{} = changeset, attrs ) do
-    # TODO should we use Changeset.apply_changes instead?
     changeset
     |> Changeset.apply_changes
     |> do_merge( attrs )
