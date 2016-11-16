@@ -3,7 +3,7 @@ defmodule PhilColumns.Mixfile do
 
   def project do
     [app: :phil_columns,
-     version: "0.5.2",
+     version: "0.6.0",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
