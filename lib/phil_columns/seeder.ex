@@ -81,7 +81,7 @@ defmodule PhilColumns.Seeder do
       module.__seed__[:disable_ddl_transaction] ->
         fun.()
       repo.__adapter__.supports_ddl_transaction? ->
-        repo.transaction [log: false, timeout: :infinity], fun
+        repo.transaction fun, [log: false, timeout: :infinity]
       true ->
         fun.()
     end
