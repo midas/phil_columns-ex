@@ -81,7 +81,7 @@ defmodule PhilColumns.Seeder do
       module.__seed__[:disable_ddl_transaction] ->
         fun.()
       repo.__adapter__.supports_ddl_transaction? ->
-        repo.transaction [log: false, timeout: :infinity], fun
+        repo.transaction fun, [log: false, timeout: :infinity]
       true ->
         fun.()
     end
@@ -111,6 +111,8 @@ defmodule PhilColumns.Seeder do
   """
   @spec run(Ecto.Repo.t, binary, atom, Keyword.t) :: [integer]
   def run(repo, directory, direction, opts) do
+    maybe_ensure_all_started(Application.get_env(:phil_columns, :ensure_all_started))
+
     versions = seeded_versions(repo)
 
     cond do
@@ -282,4 +284,11 @@ defmodule PhilColumns.Seeder do
   defp log(false, _msg), do: :ok
   defp log(level, msg),  do: Logger.log(level, msg)
 
+  defp maybe_ensure_all_started(nil), do: nil
+
+  defp maybe_ensure_all_started(apps) when is_list(apps) do
+    Enum.each(apps, &Application.ensure_all_started(&1))
+  end
+
+  defp maybe_ensure_all_started(_other), do: raise "ensure_all_started must be a list of apps"
 end

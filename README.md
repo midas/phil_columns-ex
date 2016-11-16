@@ -39,6 +39,16 @@ defmodule MyApp.Seed do
 end
 ```
 
+## Configuration
+
+If you need to ensure applications are started before seeding, configure them like this:
+
+```elixir
+config :phil_columns,
+  ensure_all_started: ~w(timex)a
+```
+
+
 ## Usage
 
 ### Seeding Quick Start
@@ -47,7 +57,7 @@ Use the generator to create a seed.
 
     $ mix phil_columns.gen.seed add_things
 
-The generator puts a seed file in place.  Add your seeding logic to the `up/1` and/or `down/1` 
+The generator puts a seed file in place.  Add your seeding logic to the `up/1` and/or `down/1`
 functions using any valid Elixir/Ecto code.
 
 ```elixir
@@ -72,7 +82,7 @@ The simplest usage of the seed command defaults the environment to `dev` and the
 
     $ mix phil_columns.seed
 
-The env can be overridden by providing a switch.  The env is used to select only seeds that have been 
+The env can be overridden by providing a switch.  The env is used to select only seeds that have been
 specified for the specified env.
 
     $ mix phil_columns.seed --env=prod
@@ -80,8 +90,8 @@ specified for the specified env.
 
 ### Tags and Environments
 
-Tags and environments can be applied to seeds and filtered in command usage.  The seed generator adds the `dev` 
-environment by default and no tags.  This feature enables efficiency and adaptability in development seeding and 
+Tags and environments can be applied to seeds and filtered in command usage.  The seed generator adds the `dev`
+environment by default and no tags.  This feature enables efficiency and adaptability in development seeding and
 the possibility to use _PhilColumns_ seeding in production (see Production Seeding section below).
 
 Specifying environment(s) for a seed is accomplished with the envs function.
@@ -121,10 +131,10 @@ To change the tag(s) provide them after the command command line.
 
 ### Why?
 
-Systems often have system level data that must be seeded when bootstraping a system or as new features are rolled out.  Some 
+Systems often have system level data that must be seeded when bootstraping a system or as new features are rolled out.  Some
 examples are settings, configurations, roles, licenses, etc.
 
-_PhilColumns_ provides the ability to apply these system data seedings and commit them with features, analgous to an Ecto 
+_PhilColumns_ provides the ability to apply these system data seedings and commit them with features, analgous to an Ecto
 migration. Committing seed data with features or bug fixes communicates the intention of the data more clearly than any
 other strategy can.
 
@@ -165,7 +175,7 @@ defmodule MyApp.Deployment.Seeder do
       end)
     end)
   end
-  
+
   defp current_env do
     # implement this
     # warning: do not use Mix.env if you are doing an erlang release
