@@ -39,6 +39,16 @@ defmodule MyApp.Seed do
 end
 ```
 
+## Configuration
+
+If you need to ensure applications are started before seeding, configure them like this:
+
+```elixir
+config :phil_columns,
+  ensure_all_started: ~w(timex)a
+```
+
+
 ## Usage
 
 ### Seeding Quick Start
