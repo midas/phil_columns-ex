@@ -4,10 +4,11 @@ defmodule PhilColumns.Factory do
 
   defmacro __using__(opts) do
     quote do
-
       @before_compile PhilColumns.Factory
       Module.register_attribute(__MODULE__, :repo, accumulate: false)
       Module.put_attribute __MODULE__, :repo, unquote(opts[:repo])
+
+      import PhilColumns.Factory, only: [sequence: 1, sequence: 2]
 
       def build(factory_name, attrs \\ %{}) do
         PhilColumns.Factory.build(__MODULE__, factory_name, attrs)
@@ -72,6 +73,10 @@ defmodule PhilColumns.Factory do
     apply(module, :factory, [factory_name]) #|> do_merge(attrs)
     |> handle_params_for( attrs )
   end
+
+  def sequence(name), do: PhilColumns.Sequence.next(name)
+
+  def sequence(name, formatter), do: PhilColumns.Sequence.next(name, formatter)
 
   # Private ##########
 
