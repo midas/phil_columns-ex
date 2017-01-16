@@ -115,6 +115,7 @@ defmodule PhilColumns.Factory do
 
   defp handle_params_for( %{__meta__: _} = record, attrs ) do
     record
+    |> do_merge( attrs )
     |> drop_ecto_fields
   end
 
