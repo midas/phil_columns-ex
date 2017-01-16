@@ -271,7 +271,7 @@ defmodule PhilColumns.Seeder do
       any_intersection?(mod, tags)
   end
 
-  defp any_intersection?(mod, []), do: true
+  defp any_intersection?(_mod, []), do: true
 
   defp any_intersection?(mod, tags) do
     (intersection(mod.tags, tags) |> Enum.count) > 0

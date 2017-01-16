@@ -138,22 +138,22 @@ defmodule PhilColumns.Factory do
     raise ArgumentError, "#{inspect record} is not an Ecto model. Use `build` instead."
   end
 
-  defp module_from_struct(%{__struct__: struct_name}) do
-    struct_name
-  end
+  #defp module_from_struct(%{__struct__: struct_name}) do
+    #struct_name
+  #end
 
-  defp name_from_struct(%{__struct__: struct_name}) do
-    struct_name
-    |> Module.split
-    |> List.last
-    |> underscore
-    |> String.downcase
-    |> String.to_atom
-  end
+  #defp name_from_struct(%{__struct__: struct_name}) do
+    #struct_name
+    #|> Module.split
+    #|> List.last
+    #|> underscore
+    #|> String.downcase
+    #|> String.to_atom
+  #end
 
-  defp underscore(name) do
-    Regex.split(~r/(?=[A-Z])/, name)
-    |> Enum.join("_")
-  end
+  #defp underscore(name) do
+    #Regex.split(~r/(?=[A-Z])/, name)
+    #|> Enum.join("_")
+  #end
 
 end

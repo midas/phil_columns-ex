@@ -7,7 +7,7 @@ defmodule PhilColumns.Seed.Runner do
   @doc """
   Runs the given seeds.
   """
-  def run(repo, module, direction, operation, migrator_direction, opts) do
+  def run(repo, module, direction, operation, _migrator_direction, opts) do
     log(opts[:log], "== Running #{inspect module}.#{operation}/0 #{direction}")
 
     run_seed(repo, module, operation, opts)
@@ -45,12 +45,12 @@ defmodule PhilColumns.Seed.Runner do
     log(opts[:log], "== Seeded in #{inspect(div(time, 10000) / 10)}s")
   end
 
-  defp handle_run_seed({time, {:error, %{model: %{id: nil} = model} = changeset}}, opts) do
+  defp handle_run_seed({_time, {:error, %{model: %{id: nil} = model} = changeset}}, _opts) do
     raise PhilColumns.SeedError,
       "Failed to create #{inspect model.__struct__} due to #{inspect changeset.errors} with changes #{inspect changeset.changes}"
   end
 
-  defp handle_run_seed({time, {:error, %{model: model} = changeset}}, opts) do
+  defp handle_run_seed({_time, {:error, %{model: model} = changeset}}, _opts) do
     raise PhilColumns.SeedError,
       "Failed to update #{inspect model.__struct__} due to #{inspect changeset.errors} with changes #{inspect changeset.changes}"
   end
