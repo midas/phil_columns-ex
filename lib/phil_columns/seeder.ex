@@ -118,8 +118,8 @@ defmodule PhilColumns.Seeder do
     cond do
       opts[:all] ->
         run_all(repo, versions, directory, direction, opts)
-      #to = opts[:to] ->
-        #run_to(repo, versions, directory, direction, to, opts)
+      to = opts[:to] ->
+        run_to(repo, versions, directory, direction, to, opts)
       #step = opts[:step] ->
         #run_step(repo, versions, directory, direction, step, opts)
       true ->
@@ -143,18 +143,21 @@ defmodule PhilColumns.Seeder do
     end)
   end
 
-  #defp run_to(repo, versions, directory, direction, target, opts) do
-    #within_target_version? = fn
-      #{version, _, _}, target, :up ->
-        #version <= target
-      #{version, _, _}, target, :down ->
-        #version >= target
-    #end
-
-    #pending_in_direction(versions, directory, direction)
-    #|> Enum.take_while(&(within_target_version?.(&1, target, direction)))
+  #defp run_to(repo, versions, directory, direction, 0, opts) do
+    #pending_in_direction(versions, directory, direction, opts)
     #|> seed(direction, repo, opts)
   #end
+
+  defp run_to(repo, versions, directory, direction, target, opts) do
+    pending_in_direction(versions, directory, direction, opts)
+    |> Enum.take_while(fn(seed_info) ->
+         within_target_version?(seed_info, target, direction)
+       end)
+    |> seed(direction, repo, opts)
+  end
+
+  defp within_target_version?({version,_,_,_}, target, :up),   do: version <= target
+  defp within_target_version?({version,_,_,_}, target, :down), do: version >= target
 
   #defp run_step(repo, versions, directory, direction, count, opts) do
     #pending_in_direction(versions, directory, direction)
@@ -196,9 +199,6 @@ defmodule PhilColumns.Seeder do
     |> Enum.map(fn {version, name, file} ->
          [{mod, _bin}] = Code.load_file(file)
          {version, name, file, mod}
-       end)
-    |> Enum.filter(fn {_version, _name, _file, mod} ->
-         has_env_and_any_tags?(mod, opts[:env], opts[:tags])
        end)
     |> Enum.reverse
   end

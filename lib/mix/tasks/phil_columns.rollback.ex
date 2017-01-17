@@ -13,8 +13,8 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
 
     {opts, _, _} = OptionParser.parse args,
                      switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
-                                pool_size: :integer, env: :string, tags: :string],
-                     aliases: [e: :env, n: :step, t: :tags, v: :to]
+                                pool_size: :integer, env: :string],
+                     aliases: [e: :env, n: :steps, v: :to]
 
     opts =
       if opts[:to] || opts[:step] || opts[:all],
