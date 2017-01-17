@@ -224,7 +224,7 @@ defmodule PhilColumns.Seeder do
   end
 
   defp seed(seeds, direction, repo, opts) do
-    log(opts[:log], "=== Executing seeds up for env #{inspect opts[:env]} and tags #{inspect opts[:tags]}")
+    log_seeding_start(direction, opts)
 
     if Enum.empty? seeds do
       level = Keyword.get(opts, :log, :info)
@@ -243,6 +243,14 @@ defmodule PhilColumns.Seeder do
 
       version
     end
+  end
+
+  defp log_seeding_start(:up, opts) do
+    log(opts[:log], "=== Executing seeds up for env #{inspect opts[:env]} and tags #{inspect opts[:tags]}")
+  end
+
+  defp log_seeding_start(:down, opts) do
+    log(opts[:log], "=== Executing seeds down for env #{inspect opts[:env]}")
   end
 
   defp ensure_no_duplication([{version, name, _, _} | t]) do
