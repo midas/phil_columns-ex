@@ -193,7 +193,7 @@ defmodule PhilColumns.Seeder do
        end)
   end
 
-  defp pending_in_direction(versions, directory, :down, opts) do
+  defp pending_in_direction(versions, directory, :down, _opts) do
     seeds_for(directory)
     |> Enum.filter(fn {version, _name, _file} -> version in versions end)
     |> Enum.map(fn {version, name, file} ->
