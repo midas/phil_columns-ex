@@ -17,7 +17,7 @@ defmodule Mix.Tasks.PhilColumns.Gen.Seed do
         {_, [name], _} ->
           ensure_repo(repo, args)
           path = Path.relative_to(seeds_path(repo), Mix.Project.app_path)
-          file = Path.join(path, "#{timestamp}_#{name}.exs")
+          file = Path.join(path, "#{timestamp()}_#{name}.exs")
           create_directory path
           create_file file, seed_template(root_mod: root_mod(repo),
             mod: Module.concat([repo, Seeds, Inflex.camelize(name)]))
