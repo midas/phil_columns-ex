@@ -3,7 +3,7 @@ defmodule PhilColumns.Mixfile do
 
   def project do
     [app: :phil_columns,
-     version: "1.0.1",
+     version: "2.0.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
      deps_path: "../../deps",
@@ -35,7 +35,7 @@ defmodule PhilColumns.Mixfile do
       licenses: ["MIT"],
       links: %{
         "GitHub" => "https://github.com/midas/phil_columns-ex",
-        "Docs" => "https://hexdocs.pm/phil_columns/1.0.1"
+        "Docs" => "https://hexdocs.pm/phil_columns/2.0.0"
       }
     ]
   end
