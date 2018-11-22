@@ -1,6 +1,7 @@
 defmodule Mix.PhilColumns do
 
   import Mix.Ecto
+  import Mix.EctoSQL
 
   @doc """
   Ensures the given repository's seeds path exists on the filesystem.
