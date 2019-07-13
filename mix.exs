@@ -18,7 +18,7 @@ defmodule PhilColumns.Mixfile do
 
   defp description do
     """
-    A full featured Elixir/Ecto seeding solution providing means for dev and prod seeding.
+    A full featured Elixir/Ecto seeding and factory solution providing means for dev and prod seeding as well as factories for test.
     """
   end
 
