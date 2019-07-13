@@ -19,8 +19,8 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
   started outside our application supervision tree and shutdown
   afterwards.
   ## Examples
-      mix ecto.seeds
-      mix ecto.seeds -r Custom.Repo
+      mix phil_columns.seeds
+      mix phil_columns.seeds -r Custom.Repo
   ## Command line options
     * `-r`, `--repo` - the repo to obtain the status for
   """
@@ -28,7 +28,7 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
   @doc false
   def run(args, seeds \\ &PhilColumns.Seeder.seeds/3, puts \\ &IO.puts/1) do
     repos = parse_repo(args)
-            |> List.wrap
+            |> List.wrap()
 
     {opts, _, _} = OptionParser.parse args,
                      switches: [env: :string, tags: :string],
@@ -44,28 +44,35 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
         do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
         else: Keyword.put(opts, :tags, [])
 
-    result = Enum.map(repos, fn repo ->
-      repo_status =
-        exec_task(repo, opts, fn ->
-          seeds.(repo, seeds_path(repo), opts)
-        end)
+    for repo <- repos do
+      ensure_repo(repo, args)
+      path = ensure_seeds_path(repo, opts)
 
-      """
-      Repo: #{inspect repo}
-        Status    Seed ID         Seed Name
-      --------------------------------------------------
-      """ <>
-      Enum.map_join(repo_status, "\n", fn({status, number, description}) ->
-        status =
-          case status do
-            :up   -> "up  "
-            :down -> "down"
-          end
+      case PhilColumns.Seeder.with_repo(repo, &seeds.(&1, path, opts), [mode: :temporary]) do
+        {:ok, repo_status, _} ->
+          puts.(
+            """
 
-        "  #{status}      #{number}  #{description}"
-      end) <> "\n"
-    end)
+            Repo: #{inspect(repo)}
 
-     puts.(Enum.join(result, "\n"))
+              Status    Seed ID         Seed Name
+            --------------------------------------------------
+            """ <>
+              Enum.map_join(repo_status, "\n", fn {status, number, description} ->
+                "  #{format(status, 10)}#{format(number, 16)}#{description}"
+              end) <> "\n"
+          )
+
+        {:error, error} ->
+          Mix.raise "Could not start repo #{inspect repo}, error: #{inspect error}"
+      end
+    end
   end
+
+  defp format(content, pad) do
+    content
+    |> to_string()
+    |> String.pad_trailing(pad)
+  end
+
 end

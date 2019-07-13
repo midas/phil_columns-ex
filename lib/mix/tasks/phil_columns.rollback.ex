@@ -9,7 +9,7 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
 
   def run(args, seeder \\ &PhilColumns.Seeder.run/4) do
     repos = parse_repo(args)
-            |> List.wrap
+            |> List.wrap()
 
     {opts, _, _} = OptionParser.parse args,
                      switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
@@ -36,10 +36,27 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
         do: Keyword.put(opts, :env, String.to_atom(opts[:env])),
         else: Keyword.put(opts, :env, :dev)
 
-    Enum.each repos, fn repo ->
-      exec_task(repo, opts, fn ->
-        seeder.(repo, seeds_path(repo), :down, opts)
-      end)
+    # Start ecto_sql explicitly before as we don't need
+    # to restart those apps if migrated.
+    {:ok, _} = Application.ensure_all_started(:ecto_sql)
+
+    for repo <- repos do
+      ensure_repo(repo, args)
+      path = ensure_seeds_path(repo, opts)
+
+      pool = repo.config[:pool]
+
+      fun =
+        if Code.ensure_loaded?(pool) and function_exported?(pool, :unboxed_run, 2) do
+          &pool.unboxed_run(&1, fn -> seeder.(&1, path, :down, opts) end)
+        else
+          &seeder.(&1, path, :down, opts)
+        end
+
+      case PhilColumns.Seeder.with_repo(repo, fun, [mode: :temporary] ++ opts) do
+        {:ok, migrated, apps} -> restart_apps_if_migrated(apps, migrated)
+        {:error, error} -> Mix.raise "Could not start repo #{inspect repo}, error: #{inspect error}"
+      end
     end
   end
 

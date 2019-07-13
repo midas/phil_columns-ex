@@ -1,38 +1,53 @@
 defmodule Mix.PhilColumns do
 
-  import Mix.Ecto
   import Mix.EctoSQL
 
   @doc """
-  Ensures the given repository's seeds path exists on the filesystem.
+  Ensures the given repository's seeds path exists on the file system.
   """
-  @spec ensure_seeds_path(Ecto.Repo.t) :: Ecto.Repo.t | no_return
-  def ensure_seeds_path(repo) do
-    #with false <- Mix.Project.umbrella?,
-         #path = Path.relative_to(seeds_path(repo), Mix.Project.app_path),
-         #false <- File.dir?(path),
-         #do: Mix.raise "Could not find seeds directory #{inspect path} for repo #{inspect repo}"
-    #repo
+  @spec ensure_seeds_path(Ecto.Repo.t, Keyword.t) :: String.t
+  def ensure_seeds_path(repo, opts) do
+    path = opts[:seeds_path] || Path.join(source_repo_priv(repo), "seeds")
 
-    path = Path.relative_to(seeds_path(repo), Mix.Project.app_path)
-    unless Mix.Project.umbrella? do
-      unless File.dir?(path) do
-        Mix.raise "Could not find seeds directory #{inspect path} for repo #{inspect repo}"
-      end
-    else
-      Mix.raise "Could not find seeds directory #{inspect path} for repo #{inspect repo}"
+    if not Mix.Project.umbrella? and not File.dir?(path) do
+      raise_missing_seeds(Path.relative_to_cwd(path), repo)
     end
 
-    repo
+    path
   end
 
-  def exec_task(repo, opts, task) do
-    ensure_repo(repo, opts)
-    ensure_seeds_path(repo)
-    {:ok, _pid, _apps} = ensure_started(repo, opts)
-    result = task.()
-    #pid && ensure_stopped(repo, pid)
-    result
+  defp raise_missing_seeds(path, repo) do
+    Mix.raise """
+    Could not find seeds directory #{inspect path}
+    for repo #{inspect repo}.
+
+    This may be because you are in a new project and the
+    migration directory has not been created yet. Creating an
+    empty directory at the path above will fix this error.
+
+    If you expected existing seeds to be found, please
+    make sure your repository has been properly configured
+    and the configured path exists.
+    """
+  end
+
+  @doc """
+  Restarts the app if there was any migration command.
+  """
+  @spec restart_apps_if_migrated([atom], list()) :: :ok
+  def restart_apps_if_migrated(_apps, []), do: :ok
+  def restart_apps_if_migrated(apps, [_|_]) do
+    # Silence the logger to avoid application down messages.
+    Logger.remove_backend(:console)
+    for app <- Enum.reverse(apps) do
+      Application.stop(app)
+    end
+    for app <- apps do
+      Application.ensure_all_started(app)
+    end
+    :ok
+  after
+    Logger.add_backend(:console, flush: true)
   end
 
   def root_mod(repo_mod) do

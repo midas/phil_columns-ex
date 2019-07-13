@@ -299,4 +299,36 @@ defmodule PhilColumns.Seeder do
   end
 
   defp maybe_ensure_all_started(_other), do: raise "ensure_all_started must be a list of apps"
+
+  def with_repo(repo, fun, opts \\ []) do
+    config = repo.config()
+    mode = Keyword.get(opts, :mode, :permanent)
+    apps = [:ecto_sql | config[:start_apps_before_migration] || []]
+
+    extra_started =
+      Enum.flat_map(apps, fn app ->
+        {:ok, started} = Application.ensure_all_started(app, mode)
+        started
+      end)
+
+    {:ok, repo_started} = repo.__adapter__.ensure_all_started(config, mode)
+    started = extra_started ++ repo_started
+    pool_size = Keyword.get(opts, :pool_size, 2)
+
+    case repo.start_link(pool_size: pool_size) do
+      {:ok, _} ->
+        try do
+          {:ok, fun.(repo), started}
+        after
+          repo.stop()
+        end
+
+      {:error, {:already_started, _pid}} ->
+        {:ok, fun.(repo), started}
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
 end
