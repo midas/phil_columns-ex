@@ -65,7 +65,7 @@ defmodule PhilColumns.Mixfile do
     [
       {:ecto_sql, "~> 3.0"},
       {:ex_doc, "~> 0.20", only: :dev},
-      {:inflex, "~> 1.8"}
+      {:inflex, "~> 2.0"}
     ]
   end
 end
