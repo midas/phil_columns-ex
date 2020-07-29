@@ -185,7 +185,7 @@ defmodule PhilColumns.Seeder do
     seeds_for(directory)
     |> Enum.filter(fn {version, _name, _file} -> not (version in versions) end)
     |> Enum.map(fn {version, name, file} ->
-         [{mod, _bin}] = Code.load_file(file)
+         [{mod, _bin}] = Code.compile_file(file)
          {version, name, file, mod}
        end)
     |> Enum.filter(fn {_version, _name, _file, mod} ->
@@ -197,7 +197,7 @@ defmodule PhilColumns.Seeder do
     seeds_for(directory)
     |> Enum.filter(fn {version, _name, _file} -> version in versions end)
     |> Enum.map(fn {version, name, file} ->
-         [{mod, _bin}] = Code.load_file(file)
+         [{mod, _bin}] = Code.compile_file(file)
          {version, name, file, mod}
        end)
     |> Enum.reverse
