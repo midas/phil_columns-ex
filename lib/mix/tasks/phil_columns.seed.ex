@@ -14,7 +14,7 @@ defmodule Mix.Tasks.PhilColumns.Seed do
     {opts, _, _} = OptionParser.parse args,
       switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
                  pool_size: :integer, env: :string, tags: :string, tenant: :string],
-      aliases: [e: :env, n: :step, t: :tags, v: :to, t: :tenant]
+      aliases: [e: :env, n: :step, t: :tags, v: :to]
 
     opts =
       if opts[:to] || opts[:step] || opts[:all],

@@ -32,7 +32,7 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
 
     {opts, _, _} = OptionParser.parse args,
       switches: [env: :string, tags: :string, tenant: :string],
-      aliases: [e: :env, t: :tags, t: :tenant]
+      aliases: [e: :env, t: :tags]
 
     opts =
       if opts[:env],
