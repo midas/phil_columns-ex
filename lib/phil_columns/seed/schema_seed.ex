@@ -43,7 +43,7 @@ defmodule PhilColumns.Seed.SchemaSeed do
     adapter.execute_ddl(repo,
       {:create_if_not_exists, table, [
           {:add, :version, :bigint, primary_key: true},
-          {:add, :tenant, :string, default: "main"},
+          {:add, :tenant, :string, primary_key: true, default: "main"},
         {:add, :inserted_at, :naive_datetime, []}]}, @opts)
   end
 end

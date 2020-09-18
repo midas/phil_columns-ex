@@ -44,7 +44,7 @@ defmodule Mix.Tasks.PhilColumns.Seed do
     opts =
     if opts[:tenant],
       do: opts,
-      else: Keyword.put(opts, :log, "main")
+      else: Keyword.put(opts, :tenant, "main")
 
     # Start ecto_sql explicitly before as we don't need
     # to restart those apps if migrated.

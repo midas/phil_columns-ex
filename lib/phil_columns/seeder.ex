@@ -11,7 +11,7 @@ defmodule PhilColumns.Seeder do
   This function ensures the migration table exists
   if no table has been defined yet.
   """
-  @spec seeded_versions(Ecto.Repo.t) :: list()
+  @spec seeded_versions(Ecto.Repo.t, String.t) :: list()
   def seeded_versions(repo, tenant) do
     SchemaSeed.ensure_schema_seeds_table!(repo)
     SchemaSeed.seeded_versions(repo, tenant)

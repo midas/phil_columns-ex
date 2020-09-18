@@ -47,7 +47,7 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
     opts =
     if opts[:tenant],
       do: opts,
-      else: Keyword.put(opts, :log, "main")
+      else: Keyword.put(opts, :tenant, "main")
 
     for repo <- repos do
       ensure_repo(repo, args)
