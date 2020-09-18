@@ -13,8 +13,8 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
 
     {opts, _, _} = OptionParser.parse args,
                      switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
-                                pool_size: :integer, env: :string],
-                     aliases: [e: :env, n: :steps, v: :to]
+                                pool_size: :integer, env: :string, tenant: :string],
+                     aliases: [e: :env, n: :steps, v: :to, t: :tenant]
 
     opts =
       if opts[:to] || opts[:step] || opts[:all],
@@ -35,6 +35,11 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
       if opts[:env],
         do: Keyword.put(opts, :env, String.to_atom(opts[:env])),
         else: Keyword.put(opts, :env, :dev)
+
+    opts =
+    if opts[:tenant],
+      do: opts,
+      else: Keyword.put(opts, :log, "main")
 
     # Start ecto_sql explicitly before as we don't need
     # to restart those apps if migrated.

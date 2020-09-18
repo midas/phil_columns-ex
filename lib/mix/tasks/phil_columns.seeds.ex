@@ -31,8 +31,8 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
             |> List.wrap()
 
     {opts, _, _} = OptionParser.parse args,
-                     switches: [env: :string, tags: :string],
-                     aliases: [e: :env, t: :tags]
+      switches: [env: :string, tags: :string, tenant: :string],
+      aliases: [e: :env, t: :tags, t: :tenant]
 
     opts =
       if opts[:env],
@@ -43,6 +43,11 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
       if opts[:tags],
         do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
         else: Keyword.put(opts, :tags, [])
+
+    opts =
+    if opts[:tenant],
+      do: opts,
+      else: Keyword.put(opts, :log, "main")
 
     for repo <- repos do
       ensure_repo(repo, args)

@@ -11,10 +11,10 @@ defmodule PhilColumns.Seeder do
   This function ensures the migration table exists
   if no table has been defined yet.
   """
-  @spec seeded_versions(Ecto.Repo.t) :: [integer]
-  def seeded_versions(repo) do
+  @spec seeded_versions(Ecto.Repo.t) :: list()
+  def seeded_versions(repo, tenant) do
     SchemaSeed.ensure_schema_seeds_table!(repo)
-    SchemaSeed.seeded_versions(repo)
+    SchemaSeed.seeded_versions(repo, tenant)
   end
 
   #@doc """
@@ -37,12 +37,12 @@ defmodule PhilColumns.Seeder do
     #end
   #end
 
-  defp do_up(repo, version, module, opts) do
+  defp do_up(repo, version, tenant, module, opts) do
     run_maybe_in_transaction repo, module, fn ->
       attempt(repo, module, :forward, :up, :up, opts)
         || attempt(repo, module, :forward, :change, :up, opts)
         || raise PhilColumns.SeedError, message: "#{inspect module} does not implement a `up/0` function"
-      SchemaSeed.up(repo, version)
+      SchemaSeed.up(repo, version, tenant)
     end
   end
 
@@ -72,7 +72,7 @@ defmodule PhilColumns.Seeder do
       attempt(repo, module, :forward, :down, :down, opts)
         || attempt(repo, module, :backward, :change, :down, opts)
         || raise PhilColumns.SeedError, message: "#{inspect module} does not implement a `down/0` function"
-      SchemaSeed.down(repo, version)
+      SchemaSeed.down(repo, version, tenant)
     end
   end
 
@@ -113,7 +113,7 @@ defmodule PhilColumns.Seeder do
   def run(repo, directory, direction, opts) do
     maybe_ensure_all_started(Application.get_env(:phil_columns, :ensure_all_started))
 
-    versions = seeded_versions(repo)
+    versions = seeded_versions(repo, opts[:tenant])
 
     cond do
       opts[:all] ->

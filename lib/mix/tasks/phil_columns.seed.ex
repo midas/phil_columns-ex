@@ -12,9 +12,9 @@ defmodule Mix.Tasks.PhilColumns.Seed do
             |> List.wrap()
 
     {opts, _, _} = OptionParser.parse args,
-                     switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
-                                pool_size: :integer, env: :string, tags: :string],
-                     aliases: [e: :env, n: :step, t: :tags, v: :to]
+      switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
+                 pool_size: :integer, env: :string, tags: :string, tenant: :string],
+      aliases: [e: :env, n: :step, t: :tags, v: :to, t: :tenant]
 
     opts =
       if opts[:to] || opts[:step] || opts[:all],
@@ -40,6 +40,11 @@ defmodule Mix.Tasks.PhilColumns.Seed do
       if opts[:tags],
         do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
         else: Keyword.put(opts, :tags, [])
+
+    opts =
+    if opts[:tenant],
+      do: opts,
+      else: Keyword.put(opts, :log, "main")
 
     # Start ecto_sql explicitly before as we don't need
     # to restart those apps if migrated.
