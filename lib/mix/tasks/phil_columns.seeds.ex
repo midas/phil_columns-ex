@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.PhilColumns.Seeds do
-
   use Mix.Task
 
   import Mix.Ecto
@@ -27,12 +26,15 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
 
   @doc false
   def run(args, seeds \\ &PhilColumns.Seeder.seeds/3, puts \\ &IO.puts/1) do
-    repos = parse_repo(args)
-            |> List.wrap()
+    repos =
+      parse_repo(args)
+      |> List.wrap()
 
-    {opts, _, _} = OptionParser.parse args,
-      switches: [env: :string, tags: :string, tenant: :string],
-      aliases: [e: :env, t: :tags]
+    {opts, _, _} =
+      OptionParser.parse(args,
+        switches: [env: :string, tags: :string, tenant: :string],
+        aliases: [e: :env, t: :tags, t: :tenant]
+      )
 
     opts =
       if opts[:env],
@@ -41,19 +43,27 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
 
     opts =
       if opts[:tags],
-        do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
+        do:
+          Keyword.put(
+            opts,
+            :tags,
+            String.split(opts[:tags], ",")
+            |> List.wrap()
+            |> Enum.map(fn tag -> String.to_atom(tag) end)
+            |> Enum.sort()
+          ),
         else: Keyword.put(opts, :tags, [])
 
     opts =
-    if opts[:tenant],
-      do: opts,
-      else: Keyword.put(opts, :tenant, "main")
+      if opts[:tenant],
+        do: opts,
+        else: Keyword.put(opts, :tenant, "main")
 
     for repo <- repos do
       ensure_repo(repo, args)
       path = ensure_seeds_path(repo, opts)
 
-      case PhilColumns.Seeder.with_repo(repo, &seeds.(&1, path, opts), [mode: :temporary]) do
+      case PhilColumns.Seeder.with_repo(repo, &seeds.(&1, path, opts), mode: :temporary) do
         {:ok, repo_status, _} ->
           puts.(
             """
@@ -69,7 +79,7 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
           )
 
         {:error, error} ->
-          Mix.raise "Could not start repo #{inspect repo}, error: #{inspect error}"
+          Mix.raise("Could not start repo #{inspect(repo)}, error: #{inspect(error)}")
       end
     end
   end
@@ -79,5 +89,4 @@ defmodule Mix.Tasks.PhilColumns.Seeds do
     |> to_string()
     |> String.pad_trailing(pad)
   end
-
 end

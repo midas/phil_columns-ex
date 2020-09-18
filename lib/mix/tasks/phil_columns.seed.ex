@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.PhilColumns.Seed do
-
   use Mix.Task
 
   import Mix.Ecto
@@ -8,13 +7,24 @@ defmodule Mix.Tasks.PhilColumns.Seed do
   @shortdoc "Executes the seeds for specified env and tags up"
 
   def run(args, seeder \\ &PhilColumns.Seeder.run/4) do
-    repos = parse_repo(args)
-            |> List.wrap()
+    repos =
+      parse_repo(args)
+      |> List.wrap()
 
-    {opts, _, _} = OptionParser.parse args,
-      switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
-                 pool_size: :integer, env: :string, tags: :string, tenant: :string],
-      aliases: [e: :env, n: :step, t: :tags, v: :to]
+    {opts, _, _} =
+      OptionParser.parse(args,
+        switches: [
+          all: :boolean,
+          step: :integer,
+          to: :integer,
+          quiet: :boolean,
+          pool_size: :integer,
+          env: :string,
+          tags: :string,
+          tenant: :string
+        ],
+        aliases: [e: :env, n: :step, t: :tags, v: :to, t: :tenant]
+      )
 
     opts =
       if opts[:to] || opts[:step] || opts[:all],
@@ -38,13 +48,21 @@ defmodule Mix.Tasks.PhilColumns.Seed do
 
     opts =
       if opts[:tags],
-        do: Keyword.put(opts, :tags, String.split(opts[:tags], ",") |> List.wrap |> Enum.map(fn(tag) -> String.to_atom(tag) end) |> Enum.sort),
+        do:
+          Keyword.put(
+            opts,
+            :tags,
+            String.split(opts[:tags], ",")
+            |> List.wrap()
+            |> Enum.map(fn tag -> String.to_atom(tag) end)
+            |> Enum.sort()
+          ),
         else: Keyword.put(opts, :tags, [])
 
     opts =
-    if opts[:tenant],
-      do: opts,
-      else: Keyword.put(opts, :tenant, "main")
+      if opts[:tenant],
+        do: opts,
+        else: Keyword.put(opts, :tenant, "main")
 
     # Start ecto_sql explicitly before as we don't need
     # to restart those apps if migrated.
@@ -64,10 +82,12 @@ defmodule Mix.Tasks.PhilColumns.Seed do
         end
 
       case PhilColumns.Seeder.with_repo(repo, fun, [mode: :temporary] ++ opts) do
-        {:ok, migrated, apps} -> restart_apps_if_migrated(apps, migrated)
-        {:error, error} -> Mix.raise "Could not start repo #{inspect repo}, error: #{inspect error}"
+        {:ok, migrated, apps} ->
+          restart_apps_if_migrated(apps, migrated)
+
+        {:error, error} ->
+          Mix.raise("Could not start repo #{inspect(repo)}, error: #{inspect(error)}")
       end
     end
   end
-
 end
