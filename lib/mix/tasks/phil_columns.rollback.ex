@@ -22,7 +22,7 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
           env: :string,
           tenant: :string
         ],
-        aliases: [e: :env, n: :steps, v: :to, t: :tenant]
+        aliases: [e: :env, n: :steps, v: :to]
       )
 
     opts =

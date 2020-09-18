@@ -23,7 +23,7 @@ defmodule Mix.Tasks.PhilColumns.Seed do
           tags: :string,
           tenant: :string
         ],
-        aliases: [e: :env, n: :step, t: :tags, v: :to, t: :tenant]
+        aliases: [e: :env, n: :step, t: :tags, v: :to]
       )
 
     opts =
