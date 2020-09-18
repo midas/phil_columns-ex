@@ -37,12 +37,12 @@ defmodule PhilColumns.Seeder do
     #end
   #end
 
-  defp do_up(repo, version, tenant, module, opts) do
+  defp do_up(repo, version, module, opts) do
     run_maybe_in_transaction repo, module, fn ->
       attempt(repo, module, :forward, :up, :up, opts)
         || attempt(repo, module, :forward, :change, :up, opts)
         || raise PhilColumns.SeedError, message: "#{inspect module} does not implement a `up/0` function"
-      SchemaSeed.up(repo, version, tenant)
+      SchemaSeed.up(repo, version, opts[:tenant])
     end
   end
 
@@ -72,7 +72,7 @@ defmodule PhilColumns.Seeder do
       attempt(repo, module, :forward, :down, :down, opts)
         || attempt(repo, module, :backward, :change, :down, opts)
         || raise PhilColumns.SeedError, message: "#{inspect module} does not implement a `down/0` function"
-      SchemaSeed.down(repo, version, tenant)
+      SchemaSeed.down(repo, version, opts[:tenant])
     end
   end
 
@@ -132,7 +132,7 @@ defmodule PhilColumns.Seeder do
   without actually running any seeds.
   """
   def seeds(repo, directory, opts) do
-    versions = seeded_versions(repo)
+    versions = seeded_versions(repo, opts[:tenant])
 
     Enum.map(pending_in_direction(versions, directory, :down, opts) |> Enum.reverse, fn {a, b, _, _} ->
       {:up, a, b}
