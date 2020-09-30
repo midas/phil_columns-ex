@@ -7,6 +7,9 @@ defmodule Mix.Tasks.PhilColumns.Seed do
   @shortdoc "Executes the seeds for specified env and tags up"
 
   def run(args, seeder \\ &PhilColumns.Seeder.run/4) do
+    # This will start our application
+    Mix.Task.run("app.start")
+
     repos =
       parse_repo(args)
       |> List.wrap()
