@@ -12,7 +12,7 @@ defmodule PhilColumns.Seed.SchemaSeed do
     timestamps(updated_at: false)
   end
 
-  @opts [timeout: :infinity, log: false]
+  @opts [timeout: :infinity, log: false, schema_migration: true]
 
   def ensure_schema_seeds_table!(repo) do
     adapter = repo.__adapter__
