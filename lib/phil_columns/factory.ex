@@ -1,12 +1,11 @@
 defmodule PhilColumns.Factory do
-
   alias Ecto.Changeset
 
   defmacro __using__(opts) do
     quote do
       @before_compile PhilColumns.Factory
       Module.register_attribute(__MODULE__, :repo, accumulate: false)
-      Module.put_attribute __MODULE__, :repo, unquote(opts[:repo])
+      Module.put_attribute(__MODULE__, :repo, unquote(opts[:repo]))
 
       import PhilColumns.Factory, only: [sequence: 1, sequence: 2]
 
@@ -14,13 +13,13 @@ defmodule PhilColumns.Factory do
         PhilColumns.Factory.build(__MODULE__, factory_name, attrs)
       end
 
-      #def build_pair(factory_name, attrs \\ %{}) do
-        #PhilColumns.Factory.build_pair(__MODULE__, factory_name, attrs)
-      #end
+      # def build_pair(factory_name, attrs \\ %{}) do
+      # PhilColumns.Factory.build_pair(__MODULE__, factory_name, attrs)
+      # end
 
-      #def build_list(number_of_factories, factory_name, attrs \\ %{}) do
-        #PhilColumns.Factory.build_list(__MODULE__, factory_name, attrs)
-      #end
+      # def build_list(number_of_factories, factory_name, attrs \\ %{}) do
+      # PhilColumns.Factory.build_list(__MODULE__, factory_name, attrs)
+      # end
 
       def insert(factory_name, attrs \\ %{}) do
         PhilColumns.Factory.insert(__MODULE__, factory_name, attrs)
@@ -34,15 +33,12 @@ defmodule PhilColumns.Factory do
         raise "UndefinedFactoryError: factory(:#{factory_name})"
       end
 
-      def factory(factory_name,_) do
+      def factory(factory_name, _) do
         raise "UndefinedFactoryError: factory(:#{factory_name}, attrs)"
       end
 
-      defoverridable [
-        factory: 1,
-        factory: 2
-      ]
-
+      defoverridable factory: 1,
+                     factory: 2
     end
   end
 
@@ -57,21 +53,24 @@ defmodule PhilColumns.Factory do
 
   def build(module, factory_name, attrs \\ %{}) do
     attrs = Enum.into(attrs, %{})
+
     apply(module, :factory, [factory_name])
-    |> handle_build( attrs )
+    |> handle_build(attrs)
   end
 
   def insert(module, factory_name, attrs \\ %{}) do
     attrs = Enum.into(attrs, %{})
     repo = module.repo
+
     apply(module, :factory, [factory_name])
-    |> handle_insert( attrs, repo )
+    |> handle_insert(attrs, repo)
   end
 
   def params_for(module, factory_name, attrs \\ %{}) do
     attrs = Enum.into(attrs, %{})
-    apply(module, :factory, [factory_name]) #|> do_merge(attrs)
-    |> handle_params_for( attrs )
+    # |> do_merge(attrs)
+    apply(module, :factory, [factory_name])
+    |> handle_params_for(attrs)
   end
 
   def sequence(name), do: PhilColumns.Sequence.next(name)
@@ -80,42 +79,43 @@ defmodule PhilColumns.Factory do
 
   # Private ##########
 
-  defp handle_build( %Changeset{} = changeset, attrs ) do
+  defp handle_build(%Changeset{} = changeset, attrs) do
     changeset
-    |> Changeset.apply_changes
-    |> do_merge( attrs )
+    |> Changeset.apply_changes()
+    |> do_merge(attrs)
   end
 
-  defp handle_build( %{__meta__: _} = record, attrs ) do
+  defp handle_build(%{__meta__: _} = record, attrs) do
     record
-    |> do_merge( attrs )
+    |> do_merge(attrs)
   end
 
-  defp handle_insert( %Changeset{} = changeset, attrs, repo ) do
-    record = changeset
-             |> Changeset.apply_changes
-             |> do_merge( attrs )
+  defp handle_insert(%Changeset{} = changeset, attrs, repo) do
+    record =
+      changeset
+      |> Changeset.apply_changes()
+      |> do_merge(attrs)
 
     record
     |> repo.insert!
   end
 
-  defp handle_insert( %{__meta__: _} = record, attrs, repo ) do
+  defp handle_insert(%{__meta__: _} = record, attrs, repo) do
     record
-    |> do_merge( attrs )
+    |> do_merge(attrs)
     |> repo.insert!
   end
 
-  defp handle_params_for( %Changeset{} = changeset, attrs ) do
+  defp handle_params_for(%Changeset{} = changeset, attrs) do
     changeset
-    |> Changeset.apply_changes
-    |> do_merge( attrs )
+    |> Changeset.apply_changes()
+    |> do_merge(attrs)
     |> drop_ecto_fields
   end
 
-  defp handle_params_for( %{__meta__: _} = record, attrs ) do
+  defp handle_params_for(%{__meta__: _} = record, attrs) do
     record
-    |> do_merge( attrs )
+    |> do_merge(attrs)
     |> drop_ecto_fields
   end
 
@@ -127,34 +127,35 @@ defmodule PhilColumns.Factory do
     Map.merge(record, attrs)
   end
 
-  defp drop_ecto_fields(record = %{__struct__: struct, __meta__: %{__struct__: Ecto.Schema.Metadata}}) do
+  defp drop_ecto_fields(
+         record = %{__struct__: struct, __meta__: %{__struct__: Ecto.Schema.Metadata}}
+       ) do
     record
-    |> Map.from_struct
+    |> Map.from_struct()
     |> Map.delete(:__meta__)
     |> Map.drop(struct.__schema__(:associations))
     |> Map.drop(struct.__schema__(:primary_key))
   end
 
   defp drop_ecto_fields(record) do
-    raise ArgumentError, "#{inspect record} is not an Ecto model. Use `build` instead."
+    raise ArgumentError, "#{inspect(record)} is not an Ecto model. Use `build` instead."
   end
 
-  #defp module_from_struct(%{__struct__: struct_name}) do
-    #struct_name
-  #end
+  # defp module_from_struct(%{__struct__: struct_name}) do
+  # struct_name
+  # end
 
-  #defp name_from_struct(%{__struct__: struct_name}) do
-    #struct_name
-    #|> Module.split
-    #|> List.last
-    #|> underscore
-    #|> String.downcase
-    #|> String.to_atom
-  #end
+  # defp name_from_struct(%{__struct__: struct_name}) do
+  # struct_name
+  # |> Module.split
+  # |> List.last
+  # |> underscore
+  # |> String.downcase
+  # |> String.to_atom
+  # end
 
-  #defp underscore(name) do
-    #Regex.split(~r/(?=[A-Z])/, name)
-    #|> Enum.join("_")
-  #end
-
+  # defp underscore(name) do
+  # Regex.split(~r/(?=[A-Z])/, name)
+  # |> Enum.join("_")
+  # end
 end
