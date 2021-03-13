@@ -188,3 +188,57 @@ Use the module in the production app's remote console.
 ```elixir
 MyApp.Deployment.Seeder.seed(tags: ~w(things stuff)a)
 ```
+### Seeding in production when using mix release
+When using `mix release`, mix itself will not be available in your release. The module below provides an example of a module that does not use mix. 
+```elixir
+defmodule MyApp.Deployment.Seeder do
+  import Ecto.Migrator, only: [migrations_path: 2, with_repo: 2]
+
+  @app :my_app
+
+  def seed(opts \\ [], seeder \\ &PhilColumns.Seeder.run/4) do
+    load_app()
+    # set env with current_env/0 overwriting provided arg
+    opts = Keyword.put(opts, :env, current_env())
+    opts = Keyword.put(opts, :tags, [])
+
+    opts =
+      if opts[:to] || opts[:step] || opts[:all],
+        do: opts,
+        else: Keyword.put(opts, :all, true)
+
+    opts =
+      if opts[:log],
+        do: opts,
+        else: Keyword.put(opts, :log, :info)
+
+    opts =
+      if opts[:quiet],
+        do: Keyword.put(opts, :log, false),
+        else: opts
+
+    for repo <- repos() do
+      {:ok, _, _} = with_repo(repo, &seeder.(&1, migrations_path(&1, "seeds"), :up, opts))
+    end
+  end
+
+  defp current_env do
+    ## Add this to config/config.exs:
+    ##
+    ## config :my_app, env: config_env()
+    Application.fetch_env!(@app, :env)
+  end
+
+  defp repos do
+    Application.fetch_env!(@app, :ecto_repos)
+  end
+
+  defp load_app do
+    Application.load(@app)
+  end
+end
+```
+It can be run from the remote console or on the command line like this:
+```
+bin/my_app eval "MyApp.Deployment.Seeder.seed(tags: ~w(things stuff)a)"
+```
