@@ -23,7 +23,7 @@ defmodule PhilColumns.Seed.SchemaSeed do
   end
 
   def up(repo, version) do
-    repo.insert! %__MODULE__{version: version}, @opts
+    repo.insert_all({get_source(repo), __MODULE__}, [%{version: version}], @opts)
   end
 
   def down(repo, version) do
