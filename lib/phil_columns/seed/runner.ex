@@ -13,7 +13,7 @@ defmodule PhilColumns.Seed.Runner do
   end
 
   defp run_seed(repo, mod, operation, opts) do
-    :timer.tc(mod, operation, [repo])
+    :timer.tc(mod, operation, [repo, opts])
     |> handle_run_seed(opts)
   end
 
