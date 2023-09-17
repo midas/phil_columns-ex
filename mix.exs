@@ -2,29 +2,31 @@ defmodule PhilColumns.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :phil_columns,
-     version: "3.1.0",
-     build_path: "../../_build",
-     config_path: "../../config/config.exs",
-     deps_path: "../../deps",
-     lockfile: "../../mix.lock",
-     elixir: "~> 1.0",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     description: description(),
-     package: package(),
-     deps: deps()]
+    [
+      app: :glific_phil_columns,
+      version: "3.1.0",
+      # build_path: "../../_build",
+      # config_path: "../../config/config.exs",
+      # deps_path: "../../deps",
+      # lockfile: "../../mix.lock",
+      elixir: "~> 1.0",
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      description: description(),
+      package: package(),
+      deps: deps()
+    ]
   end
 
   defp description do
     """
-    A full featured Elixir/Ecto seeding and factory solution providing means for dev and prod seeding as well as factories for test.
+    A fork from a a full featured Elixir/Ecto seeding and factory solution (phil_columns) providing means for dev and prod seeding as well as factories for test.
     """
   end
 
   defp package do
     [
-      name: :phil_columns,
+      name: :glific_phil_columns,
       files: [
         "lib",
         "mix.exs",
@@ -34,7 +36,7 @@ defmodule PhilColumns.Mixfile do
       maintainers: ["C. Jason Harrelson"],
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/midas/phil_columns-ex",
+        "GitHub" => "https://github.com/glific/phil_columns-ex",
         "Docs" => "https://hexdocs.pm/phil_columns/3.0.0"
       }
     ]

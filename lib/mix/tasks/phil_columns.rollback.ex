@@ -1,5 +1,4 @@
 defmodule Mix.Tasks.PhilColumns.Rollback do
-
   use Mix.Task
 
   import Mix.Ecto
@@ -8,13 +7,23 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
   @shortdoc "Executes the seeds for specified env and tags down"
 
   def run(args, seeder \\ &PhilColumns.Seeder.run/4) do
-    repos = parse_repo(args)
-            |> List.wrap()
+    repos =
+      parse_repo(args)
+      |> List.wrap()
 
-    {opts, _, _} = OptionParser.parse args,
-                     switches: [all: :boolean, step: :integer, to: :integer, quiet: :boolean,
-                                pool_size: :integer, env: :string],
-                     aliases: [e: :env, n: :steps, v: :to]
+    {opts, _, _} =
+      OptionParser.parse(args,
+        switches: [
+          all: :boolean,
+          step: :integer,
+          to: :integer,
+          quiet: :boolean,
+          pool_size: :integer,
+          env: :string,
+          tenant: :string
+        ],
+        aliases: [e: :env, n: :steps, v: :to]
+      )
 
     opts =
       if opts[:to] || opts[:step] || opts[:all],
@@ -36,6 +45,11 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
         do: Keyword.put(opts, :env, String.to_atom(opts[:env])),
         else: Keyword.put(opts, :env, :dev)
 
+    opts =
+      if opts[:tenant],
+        do: opts,
+        else: Keyword.put(opts, :tenant, "main")
+
     # Start ecto_sql explicitly before as we don't need
     # to restart those apps if migrated.
     {:ok, _} = Application.ensure_all_started(:ecto_sql)
@@ -54,10 +68,12 @@ defmodule Mix.Tasks.PhilColumns.Rollback do
         end
 
       case PhilColumns.Seeder.with_repo(repo, fun, [mode: :temporary] ++ opts) do
-        {:ok, migrated, apps} -> restart_apps_if_migrated(apps, migrated)
-        {:error, error} -> Mix.raise "Could not start repo #{inspect repo}, error: #{inspect error}"
+        {:ok, migrated, apps} ->
+          restart_apps_if_migrated(apps, migrated)
+
+        {:error, error} ->
+          Mix.raise("Could not start repo #{inspect(repo)}, error: #{inspect(error)}")
       end
     end
   end
-
 end
